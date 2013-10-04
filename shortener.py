@@ -22,7 +22,7 @@ SHORT_URL_HALF_SPACE = (36 ** SHORT_URL_SIZE) / 2
 # Load default config
 app.config.update(dict(
     DATABASE='/tmp/urls.db',
-    DEBUG=True, # Do not set this True in production!
+    DEBUG=False, # Do not set this True in production!
 ))
 
 def connect_db():
