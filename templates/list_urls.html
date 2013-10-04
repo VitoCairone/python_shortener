@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <!-- trying to load jQuery from google first has the advantage that if the
+    user has ever loaded it before, it will be in their browser cache already
+  -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+  </script>
+  <script>window.jQuery || document.write('<script src="{{
+    url_for('static', filename='jquery.js') }}">\x3C/script>')
+  </script>
+  <title>URL Shortener</title>
+</head>
+<body>
+  <div class="master">
+    <h1>URL Shorterer Full Entry List</h1>
+    <ul class="url-pair-list">
+    {% for url_pair in url_list: %}
+    <li>
+      {{ url_pair['short_url'] }}: {{ url_pair['long_url'] }}
+    </li>
+    {% else %}
+      There are no entries!
+    {% endfor %}
+    </ul>
+  
+    <form action="{{ url_for('add_url') }}" method=post>
+      <dl>
+        <dt>URL:
+        <dd><input type=text name=url>
+        <dd><input type=submit value='Get Short URL!'>
+  </div>
+</body>
