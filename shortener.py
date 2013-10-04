@@ -57,9 +57,15 @@ def make_new_short_url():
     not_unique = True
     db = get_db()
     
+    """ It is always necessary to have the capability to increase the short
+    URL length to prevent all names from being taken. This routine resizes when
+    only half of a the name space is used; this means that the number of times
+    a name is likely to be rejected never rises very high. However, with a proper
+    queue of pre-cleared names, it would be possible to use the entire space
+    before having to resize instead. """
     present_count = int(db.execute('select count * from urls').fetchone())
     
-    if present_count > SHORT_URL_HALF_SPACE:
+    while present_count > SHORT_URL_HALF_SPACE:
         SHORT_URL_SIZE += 1
         SHORT_URL_HALF_SPACE = (36 ** SHORT_URL_SIZE) / 2
     
