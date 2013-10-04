@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+  <!-- trying to load jQuery from google first has the advantage that if the
+    user has ever loaded it before, it will be in their browser cache already
+  -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+  </script>
+  <script>
+    window.jQuery || document.write('<script src="{{
+      url_for('static', filename='jquery.min.js') }}">\x3C/script>')
+      $(document).ready(function () {
+        $("#add-url").submit(function () {
+          event.preventDefault();
+          var formdata = { url: $('input#long-url').val() }
+          if (!formdata.url) {
+            // complain when trying to submit an empty field.
+            $('#working').text('Please enter a URL to shorten.')
+          } else {
+            // this line is usually immediately overwritten. It serves only
+            // to inform the user that something is happening in the event
+            // of latency.
+            $('#working').text('Generating short URL...')
+            
+            $.post(
+              '{{ url_for('add_url') }}',
+              formdata,
+              function (response) {
+                $("#working").empty();
+                // decided not to make hyperlinks because there's no point
+                // creating a short URL and then clicking a link.
+                // the url of the index is the same as the app's root url.
+                $("#created").prepend('Created short URL  <b>' 
+                  + '{{ url_for('index', _external=true) }}' + response.result
+                  + '</b>  for  ' + formdata.url + '<br>');
+                $("input#long-url").val("");
+              }
+            );
+          } // close formdata.url if-else
+        }); // close submit callback
+      }) // close docready callback
+  </script>
+  <title>URL Shortener</title>
+</head>
+<body>
+  <div id="master">
+    <center>
+    <label for='long-url'>Enter a URL to shorten.</label>
+    
+    <form id="add-url" action="{{ url_for('add_url') }}" method=post>
+      <div>
+        <input type=text name=url id='long-url'>
+      </div>
+      <div>
+        <input type=submit value='Get Short URL' id='submit-btn'>
+      <div>
+    </form>
+    </center>
+  </div>
+  <div id="working">
+    <!-- this div holds a temporary message rendered immediately when an AJAX
+         request is sent and cleared when it comes back -->
+  </div>
+  <div id="created">
+    <!-- this div is empty until a URL is made, and then holds all the URLs
+         created this session -->
+  </div>
+</body>

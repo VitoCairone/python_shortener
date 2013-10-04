@@ -1,0 +1,9 @@
+input#long-url {
+  width: 500px;
+  height: 20px;
+}
+
+input#submit-btn {
+  margin-top: 25px;
+}
+
