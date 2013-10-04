@@ -52,6 +52,9 @@ def make_new_short_url():
     fix for this). Note that a size of 3 is unacceptable because it raises the
     possibility of dynamically generating the special shortURLs 'add' or 'all'
     """
+    global SHORT_URL_SIZE
+    global SHORT_URL_HALF_SPACE
+    
     assert SHORT_URL_SIZE > 3
     chars = string.ascii_lowercase + string.digits
     not_unique = True
@@ -63,7 +66,7 @@ def make_new_short_url():
     a name is likely to be rejected never rises very high. However, with a proper
     queue of pre-cleared names, it would be possible to use the entire space
     before having to resize instead. """
-    present_count = int(db.execute('select count * from urls').fetchone())
+    present_count = int(db.execute('select count(*) from urls').fetchone()[0])
     
     while present_count > SHORT_URL_HALF_SPACE:
         SHORT_URL_SIZE += 1
@@ -74,6 +77,7 @@ def make_new_short_url():
         cur = db.execute('select * from urls where short_url = ?', [candidate])
         if cur.fetchone() is None:
             not_unique = False
+                    
     return candidate
     
 @app.teardown_appcontext
