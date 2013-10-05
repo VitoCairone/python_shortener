@@ -161,7 +161,7 @@ def add_url():
     return jsonify(result=new_short_url);
 
 """ This route handles actual short URLs by redirecting to the intended long URL
-an appropraite plaintext error if there is no such short URL. The app is not
+or an appropraite plaintext error if there is no such short URL. The app is not
 responsable for users who input nonsense long URLs and will redirect to them
 faithfully. """ 
 @app.route('/<short_url>')
