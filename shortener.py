@@ -15,9 +15,10 @@ import random
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, redirect, g, render_template, url_for, abort
 from flask import jsonify
+import redis
 app = Flask(__name__)
 SHORT_URL_SIZE = 5
-SHORT_URL_HALF_SPACE = (36 ** SHORT_URL_SIZE) / 2
+SHORT_URL_HALF_SPACE = (36 ** SHORT_URL_SIZE) * 0.75
 
 # Load default config
 app.config.update(dict(
@@ -45,7 +46,51 @@ def get_db():
     if not hasattr(g, 'sqlite_db'):
         g.sqlite_db = connect_db()
     return g.sqlite_db
-    
+
+""" RedisQueue class via 
+http://peter-hoffmann.com/2012/python-simple-queue-redis-queue.html """
+class RedisQueue(object):
+    """Simple Queue with Redis Backend"""
+    def __init__(self, name, namespace='queue', **redis_kwargs):
+        """The default connection parameters are: host='localhost', port=6379, db=0"""
+        self.__db= redis.Redis(**redis_kwargs)
+        self.key = '%s:%s' %(namespace, name)
+
+    def qsize(self):
+        """Return the approximate size of the queue."""
+        return self.__db.llen(self.key)
+
+    def empty(self):
+        """Return True if the queue is empty, False otherwise."""
+        return self.qsize() == 0
+
+    def put(self, item):
+        """Put item into the queue."""
+        self.__db.rpush(self.key, item)
+
+    def get(self, block=True, timeout=None):
+        """Remove and return an item from the queue. 
+
+        If optional args block is true and timeout is None (the default), block
+        if necessary until an item is available."""
+        if block:
+            item = self.__db.blpop(self.key, timeout=timeout)
+        else:
+            item = self.__db.lpop(self.key)
+
+        if item:
+            item = item[1]
+        return item
+
+    def get_nowait(self):
+        """Equivalent to get(False)."""
+        return self.get(False)
+                
+def get_redisq():
+    if not hasattr(g, 'redisq'):
+        g.redisq = RedisQueue('short_url_queue')
+    return g.redisq
+
 def make_new_short_url():
     """ generates and returns a random string which is not already a short_url
     in use. However, this method is NOT race-condition-proof (TODO: implement
